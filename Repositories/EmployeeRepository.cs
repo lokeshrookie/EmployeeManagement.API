@@ -2,6 +2,7 @@
 using EmployeeManagement.API.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace EmployeeManagement.Repositories
 {
@@ -134,6 +135,49 @@ namespace EmployeeManagement.Repositories
             return id;
         }
 
+
+        // Bulk
+        
+        public async Task AddEmployeesToDatabase(List<Employee> employees)
+        {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            foreach (var employee in employees)
+                            {
+                                var command = new SqlCommand("InsertEmployee", connection, transaction)
+                                {
+                                    CommandType = CommandType.StoredProcedure
+                                };
+                                command.Parameters.AddWithValue("@Name", employee.Name);
+                                command.Parameters.AddWithValue("@Designation", employee.Designation);
+                                command.Parameters.AddWithValue("@Salary", employee.Salary);
+                                command.Parameters.AddWithValue("@DateOfBirth", employee.DateOfBirth);
+                                var idParameter = new SqlParameter("@Id", SqlDbType.Int)
+                                {
+                                    Direction = ParameterDirection.Output
+                                };
+                                command.Parameters.Add(idParameter);
+
+                                await command.ExecuteNonQueryAsync();
+                                employee.Id = (int)idParameter.Value;  // Capture the new ID if needed
+                            }
+
+                            transaction.Commit();
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                }
+            }
+        }
         public async Task UpdateEmployeeAsync(Employee employee)
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -156,9 +200,6 @@ namespace EmployeeManagement.Repositories
                 updateCommand.Parameters.AddWithValue("@DateOfBirth", employee.DateOfBirth);
                 await updateCommand.ExecuteNonQueryAsync();
             }
-
-
-
         }
 
         #region Update Employee 
@@ -217,6 +258,6 @@ namespace EmployeeManagement.Repositories
                     await command.ExecuteNonQueryAsync();
                 }
         }
-    
+
     }
 }

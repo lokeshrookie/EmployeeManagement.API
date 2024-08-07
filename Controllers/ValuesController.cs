@@ -21,7 +21,7 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployeesAsync()
         {
             try
             {
@@ -35,7 +35,7 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Employee>> GetEmployeeById(int id)
+        public async Task<ActionResult<Employee>> GetEmployeeByIdAsync(int id)
         {
             if (id <= 0)
             {
@@ -58,8 +58,8 @@ namespace EmployeeManagement.API.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<int>> AddEmployee([FromBody] Employee employee)
+        [HttpPost("Add")]
+        public async Task<ActionResult<int>> AddEmployeeAsync([FromBody] Employee employee)
         {
             if (!ModelState.IsValid)
             {
@@ -73,7 +73,27 @@ namespace EmployeeManagement.API.Controllers
             try
             {
                 var newEmployeeId = await _employeeRepository.AddEmployeeAsync(employee);
-                return CreatedAtAction(nameof(GetEmployeeById), new { id = newEmployeeId }, newEmployeeId);
+                return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = newEmployeeId }, newEmployeeId);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // Add Bulk Data 
+        [HttpPost("AddBulk")]
+        public async Task<IActionResult> AddEmployeesBulkAsync([FromBody] List<Employee> employees)
+        {
+            if (employees == null || employees.Count == 0)
+            {
+                return BadRequest("Employee list is null or empty.");
+            }
+
+            try
+            {
+                await _employeeRepository.AddEmployeesToDatabase(employees);
+                return Ok("Employees added successfully.");
             }
             catch (Exception ex)
             {
@@ -173,7 +193,7 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(int id)
+        public async Task<IActionResult> DeleteEmployeeAsync(int id)
         {
             try
             {
