@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeeManagement.API.Controllers
 {
-    [Authorize]
+ //   [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
@@ -92,7 +92,7 @@ namespace EmployeeManagement.API.Controllers
 
             try
             {
-                await _employeeRepository.AddEmployeesToDatabase(employees);
+                await _employeeRepository.AddEmployeesToDatabaseAsync(employees);
                 return Ok("Employees added successfully.");
             }
             catch (Exception ex)
@@ -150,8 +150,10 @@ namespace EmployeeManagement.API.Controllers
                         ModelState.AddModelError("Salary", "Salary must be a positive value and less than 9999999.99.");
                     }
                 }
-                
-                if(updateEmployeeDto.DateOfBirth != null && !string.IsNullOrEmpty(updateEmployeeDto.DateOfBirth.ToString()))
+
+
+                //|| updateEmployeeDto.DateOfBirth != null
+                if (!string.IsNullOrEmpty(updateEmployeeDto.DateOfBirth.ToString()))
                 {
                     if(updateEmployeeDto.DateOfBirth > DateTime.Now)
                     {
@@ -173,6 +175,7 @@ namespace EmployeeManagement.API.Controllers
                 {
                     existingEmployee.Designation = updateEmployeeDto.Designation;
                 }
+                // salary
                 if (updateEmployeeDto.Salary > 0)
                 {
                     existingEmployee.Salary = updateEmployeeDto.Salary.Value;

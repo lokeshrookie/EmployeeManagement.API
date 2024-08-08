@@ -11,7 +11,7 @@ namespace EmployeeManagement.Repositories
         Task<int> AddEmployeeAsync(Employee employee);
         Task UpdateEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(int id);
-        Task AddEmployeesToDatabase(List<Employee> employees);
+        Task AddEmployeesToDatabaseAsync(List<Employee> employees);
     }
 }
 

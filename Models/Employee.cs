@@ -19,8 +19,8 @@ namespace EmployeeManagement.API.Models
         public decimal Salary { get; set; }
 
         [Required(ErrorMessage = "Date of Birth is required.")]
-        //[DataType(DataType.Date)]
-        //[DateOfBirthValidation(ErrorMessage = "Date of Birth cannot be in the future.")]
+        [DataType(DataType.Date)]
+        [DateOfBirthValidation(ErrorMessage = "Date of Birth cannot be in the future.")]
         public DateTime DateOfBirth { get; set; }
     }
 }
