@@ -14,6 +14,16 @@ namespace EmployeeManagement.API.Controllers
     public class LoginController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+
+        // simulate users in db.
+        List<User> users = new List<User>()
+        {
+            new User
+            {
+                UserName = "Admin",
+                Password = "Password"
+            }
+        };
         
         public LoginController(IConfiguration configuration)
         {
@@ -40,7 +50,7 @@ namespace EmployeeManagement.API.Controllers
         private User AuthenticateUser(User login)
         {
             User user = null;
-            if(login.UserName == "Admin")
+            if (login.UserName == users[0].UserName && login.Password == users[0].Password)
             {
                 user = new User { UserName = login.UserName };
             }
