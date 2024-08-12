@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace EmployeeManagement.API.Controllers
 {
- //   [Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
@@ -101,6 +103,7 @@ namespace EmployeeManagement.API.Controllers
             }
         }
 
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateEmployee(UpdateEmployeeDto updateEmployeeDto)
         {
@@ -180,13 +183,22 @@ namespace EmployeeManagement.API.Controllers
                 {
                     existingEmployee.Salary = updateEmployeeDto.Salary.Value;
                 }
-                if(updateEmployeeDto.DateOfBirth > DateTime.MinValue)
+                if(!String.IsNullOrEmpty(updateEmployeeDto.DateOfBirth.ToString())  && updateEmployeeDto.DateOfBirth > DateTime.MinValue)
                 {
-                    existingEmployee.DateOfBirth = updateEmployeeDto.DateOfBirth;
+                    existingEmployee.DateOfBirth = updateEmployeeDto.DateOfBirth.Value;
                 }
 
+
+                var responseDto = new UpdateEmployeeDto
+                {
+                    Id = existingEmployee.Id,
+                    Name = existingEmployee.Name,
+                    Designation = existingEmployee.Designation,
+                    Salary = existingEmployee.Salary,
+                    DateOfBirth = existingEmployee.DateOfBirth
+                };
                 #endregion Validations
-                await _employeeRepository.UpdateEmployeeAsync(existingEmployee);
+                await _employeeRepository.UpdateEmployeeAsync(responseDto);
                 return NoContent();
             }
             catch (Exception ex)
@@ -194,6 +206,37 @@ namespace EmployeeManagement.API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
+
+        /**
+         * 
+         * In the request body, All values should be null except the fields that we want to update
+         */
+        [HttpPut("bulk-update")]
+        public async Task<IActionResult> UpdateEmployeesBulk([FromBody] List<UpdateEmployeeDto> employees)
+        {
+            if (employees == null || employees.Count == 0)
+            {
+                return BadRequest("Employee list is null or empty.");
+            }
+
+            try
+            {
+                await _employeeRepository.UpdateEmployeesInDatabaseAsync(employees);
+                return Ok("Employees updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+
+        ///
+
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployeeAsync(int id)

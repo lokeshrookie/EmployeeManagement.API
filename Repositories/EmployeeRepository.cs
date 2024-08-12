@@ -143,7 +143,6 @@ namespace EmployeeManagement.Repositories
             using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
@@ -154,20 +153,16 @@ namespace EmployeeManagement.Repositories
                         dataTable.Columns.Add("Designation", typeof(string));
                         dataTable.Columns.Add("Salary", typeof(decimal));
                         dataTable.Columns.Add("DateOfBirth", typeof(DateTime));
-
                         foreach (var employee in employees)
                         {
                             dataTable.Rows.Add(employee.Name, employee.Designation, employee.Salary, employee.DateOfBirth);
                         }
-
-
-                        Console.WriteLine(dataTable);
-
+                       
+                        //Console.WriteLine(dataTable);
                         var command = new SqlCommand("InsertEmployeeTable", connection, transaction)
                         {
                             CommandType = CommandType.StoredProcedure
                         };
-
                         var parameter = new SqlParameter
                         {
                             ParameterName = "@Employees",
@@ -176,12 +171,9 @@ namespace EmployeeManagement.Repositories
                             TypeName = "EmployeeTable",
                             Value = dataTable
                         };
-
                         command.Parameters.Add(parameter);
-
                         await command.ExecuteNonQueryAsync();
                         transaction.Commit();
-
                     }
                     catch
                     {
@@ -189,7 +181,6 @@ namespace EmployeeManagement.Repositories
                         throw;
                     }
                 }
-
                 #region forEach
 
                 //try
@@ -223,18 +214,15 @@ namespace EmployeeManagement.Repositories
                 //}
 
                 #endregion forEach
-
-
             }
         }
-        public async Task UpdateEmployeeAsync(Employee employee)
+        public async Task UpdateEmployeeAsync(UpdateEmployeeDto employee)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 var updateCommand = new SqlCommand("UpdateEmployee", connection)
                 {
-                    // SqlCommand.CommandType.
                     CommandType = System.Data.CommandType.StoredProcedure,
 
                 };
@@ -249,47 +237,16 @@ namespace EmployeeManagement.Repositories
             }
         }
 
-        #region Update Employee 
+        #region UpdateEmployeesBulk
 
-        //public async Task UpdateEmployeeAsync(int id, Employee employee)
+        //private async Task UpdateEmployeesBulkAsync(int id, UpdateEmployeeDto employee)
         //{
-
-
-        //    using (var connection = new SqlConnection(_connectionString))
-        //    {
-        //        await connection.OpenAsync();
-
-        //        // Check if employee with id exists
-        //        var checkCommand = new SqlCommand("CheckEmployeeExistence", connection)
-        //        {
-        //            CommandType = System.Data.CommandType.StoredProcedure
-        //        };
-        //        checkCommand.Parameters.AddWithValue("@Id", id);
-        //        // Add row count as output parameter
-        //        var countParamter = new SqlParameter("@RowCount", System.Data.SqlDbType.Int)
-        //        {
-        //            Direction = System.Data.ParameterDirection.Output
-        //        };
-
-        //        checkCommand.Parameters.Add(countParamter);
-        //        await checkCommand.ExecuteNonQueryAsync();
-        //        if ((int)countParamter.Value > 0)
-        //        {
-
-        //            var updateCommand = new SqlCommand("UpdateEmployee", connection)
-        //            {
-        //                CommandType = System.Data.CommandType.StoredProcedure
-        //            };
-        //            updateCommand.Parameters.AddWithValue("@Id", employee.Id);
-        //            updateCommand.Parameters.AddWithValue("@Name", employee.Name);
-        //            updateCommand.Parameters.AddWithValue("@Designation", employee.Designation);
-        //            updateCommand.Parameters.AddWithValue("@Salary", employee.Salary);
-
-        //            await updateCommand.ExecuteNonQueryAsync();
-        //        }
-        //    }
+           
         //}
-        #endregion Update Employee
+
+
+        #endregion UpdateEmployeesBulk
+
 
         public async Task DeleteEmployeeAsync(int id)
         {
@@ -301,10 +258,76 @@ namespace EmployeeManagement.Repositories
                         CommandType = System.Data.CommandType.StoredProcedure
                     };
                     command.Parameters.AddWithValue("@empId", id);
-
                     await command.ExecuteNonQueryAsync();
                 }
         }
 
+
+
+        public async  Task UpdateEmployeesInDatabaseAsync(List<UpdateEmployeeDto> employees)
+        {
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                using (var command = new SqlCommand("UpdateEmployeesBulk", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    // Create and populate the DataTable for the table-valued parameter
+                    var dataTable = new DataTable();
+                    dataTable.Columns.Add("Id", typeof(int));
+                    dataTable.Columns.Add("Name", typeof(string));
+                    dataTable.Columns.Add("Designation", typeof(string));
+                    dataTable.Columns.Add("Salary", typeof(decimal));
+                    dataTable.Columns.Add("DateOfBirth", typeof(DateTime));
+
+
+                    foreach (var employee in employees)
+                    {
+                        dataTable.Rows.Add(employee.Id, employee.Name, employee.Designation, employee.Salary, employee.DateOfBirth);
+                    }
+
+
+                    #region comment
+
+                    //foreach (var employee in employees)
+                    //{
+                    //    dataTable.Rows.Add(
+                    //        employee.Id,
+                    //        employee.Name,
+                    //        employee.Designation,
+                    //        employee.Salary,
+                    //        employee.DateOfBirth
+                    //    );
+                    //}
+
+                    //var parameter = new SqlParameter
+                    //{
+                    //    ParameterName = "@Employees",
+                    //    SqlDbType = SqlDbType.Structured,
+                    //    // Employee Table is User defined  table type (already created).
+                    //    TypeName = "EmployeeTable",
+                    //    Value = dataTable
+                    //};
+                    #endregion comment
+
+
+                    
+                    var parameter = new SqlParameter
+                    {
+                        ParameterName = "@EmployeeUpdates",
+                        SqlDbType = SqlDbType.Structured,
+                        TypeName = "EmployeeUpdateType",  // Must match the type name in SQL Server
+                        Value = dataTable
+                    };
+
+                    command.Parameters.Add(parameter);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+        }
     }
 }
