@@ -42,7 +42,7 @@ namespace EmployeeManagement.API.Repositories
 
             if (size > maxFileSize)
             {
-                return "Maximum size can be 5MB";
+                throw new Exception("Document size can not exceed 5mb");
             }
 
             string fileName = file.FileName;
