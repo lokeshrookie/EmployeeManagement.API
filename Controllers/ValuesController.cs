@@ -23,6 +23,7 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployeesAsync()
         {
             try
@@ -37,6 +38,7 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Employee>> GetEmployeeByIdAsync(int id)
         {
             if (id <= 0)
@@ -61,6 +63,7 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpPost("Add")]
+        [AllowAnonymous]
         public async Task<ActionResult<int>> AddEmployeeAsync([FromBody] Employee employee)
         {
             if (!ModelState.IsValid)
@@ -85,6 +88,7 @@ namespace EmployeeManagement.API.Controllers
 
         // Add Bulk Data 
         [HttpPost("AddBulk")]
+        [AllowAnonymous]
         public async Task<IActionResult> AddEmployeesBulkAsync([FromBody] List<Employee> employees)
         {
             if (employees == null || employees.Count == 0)
@@ -105,6 +109,7 @@ namespace EmployeeManagement.API.Controllers
 
 
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateEmployee(UpdateEmployeeDto updateEmployeeDto)
         {
             if (updateEmployeeDto == null)
@@ -214,6 +219,7 @@ namespace EmployeeManagement.API.Controllers
          * In the request body, All values should be null except the fields that we want to update
          */
         [HttpPut("bulk-update")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateEmployeesBulk([FromBody] List<UpdateEmployeeDto> employees)
         {
             if (employees == null || employees.Count == 0)
@@ -239,6 +245,7 @@ namespace EmployeeManagement.API.Controllers
 
 
         [HttpDelete("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteEmployeeAsync(int id)
         {
             try

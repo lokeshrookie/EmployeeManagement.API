@@ -15,7 +15,7 @@ namespace EmployeeManagement.API.Repositories
 
         public DocumentRepository(ApplicationDbContext context) { _context = context; }
 
-        public async Task<string> UploadDocumentAsync([FromBody]IFormFile file)
+        public async Task<string> UploadDocumentAsync(IFormFile file)
         {
 
             // extensions

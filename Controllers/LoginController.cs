@@ -35,6 +35,9 @@ namespace EmployeeManagement.API.Controllers
         public IActionResult Login([FromBody] User login)
         {
             IActionResult response = Unauthorized();
+
+            login.UserName = login.UserName.ToLower();
+
             var user = AuthenticateUser(login);
 
             if(user != null)
@@ -50,7 +53,7 @@ namespace EmployeeManagement.API.Controllers
         private User AuthenticateUser(User login)
         {
             User user = null;
-            if (login.UserName == users[0].UserName && login.Password == users[0].Password)
+            if (login.UserName == users[0].UserName.ToLower() && login.Password == users[0].Password)
             {
                 user = new User { UserName = login.UserName };
             }
@@ -68,9 +71,9 @@ namespace EmployeeManagement.API.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-            Console.WriteLine(DateTime.Now.AddMinutes(120));
+            Console.WriteLine(DateTime.Now.AddMinutes(15));
 
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims, expires: DateTime.Now.AddMinutes(120), signingCredentials: credentials);
+            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims, expires: DateTime.Now.AddMinutes(10), signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
